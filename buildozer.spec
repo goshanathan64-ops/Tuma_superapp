@@ -9,6 +9,7 @@ requirements = python3,kivy==2.2.1,kivymd==1.1.1,sqlite3,requests,pillow
 orientation = portrait
 fullscreen = 1
 p4a.python_version = 3.10
+p4a.arch = arm64-v8a
 
 # Icon and presplash (add these if you have assets)
 # icon.filename = %(source_dir)s/assets/icon.png
@@ -19,14 +20,13 @@ android.permissions = INTERNET,WRITE_EXTERNAL_STORAGE,READ_EXTERNAL_STORAGE,POST
 android.api = 34
 android.minapi = 21
 android.ndk_version = 25b
+android.ndk_api = 21
 android.sdk_path =
 android.ndk_path =
 android.logcat_filters = *:S python:D
 android.archs = arm64-v8a
 android.allow_backup = True
 android.accept_sdk_license = True
-
-# Gradle dependencies for better compatibility
 android.gradle_dependencies = androidx.appcompat:appcompat:1.6.1,androidx.constraintlayout:constraintlayout:2.1.4,com.google.android.material:material:1.11.0
 
 # Release settings
