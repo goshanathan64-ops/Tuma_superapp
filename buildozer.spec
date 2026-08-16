@@ -8,6 +8,7 @@ version = 23.3
 requirements = python3,kivy==2.3.0,kivymd==1.1.1,sqlite3,requests,pillow
 orientation = portrait
 fullscreen = 1
+p4a.python_version = 3.10
 
 # Icon and presplash (add these if you have assets)
 # icon.filename = %(source_dir)s/assets/icon.png
