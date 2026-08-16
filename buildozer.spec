@@ -5,7 +5,7 @@ package.domain = com.tuma
 source.dir = .
 source.include_exts = py,png,jpg,kv,atlas,ttf,db,json
 version = 23.3
-requirements = python3,kivy==3.1.0,kivymd==1.2.0,sqlite3,requests,pillow
+requirements = python3,kivy==2.2.1,kivymd==1.1.1,sqlite3,requests,pillow
 orientation = portrait
 fullscreen = 1
 p4a.python_version = 3.10
