@@ -5,10 +5,10 @@ package.domain = com.tuma
 source.dir = .
 source.include_exts = py,png,jpg,kv,atlas,ttf,db,json
 version = 23.3
-requirements = python3,kivy==2.3.0,kivymd==1.2.0,sqlite3,requests,pillow
+requirements = python3,kivy==2.3.0,kivymd==1.0.2.dev0,requests,pillow
 orientation = portrait
 fullscreen = 1
-p4a.python_version = 3.11
+p4a.python_version = 3.10
 p4a.arch = arm64-v8a
 
 # Icon and presplash (add these if you have assets)
