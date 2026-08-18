@@ -31,10 +31,11 @@ jobs:
       run: pip install buildozer cython==0.29.36
       
     - name: Build APK
-      run: buildozer android debug
+      run: buildozer -v android debug
       
     - name: Upload APK
       uses: actions/upload-artifact@v4
+      if: always()
       with:
         name: tuma-apk
         path: bin/*.apk
