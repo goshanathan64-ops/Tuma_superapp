@@ -19,3 +19,6 @@ android.api = 34
 android.minapi = 21
 android.ndk_version = 25b
 android.ndk_api = 34
+android.logcat_filters = *:S python:D
+android.allow_backup = True
+android.accept_sdk_license = True
