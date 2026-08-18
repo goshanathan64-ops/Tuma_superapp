@@ -15,6 +15,14 @@ jobs:
       with:
         python-version: '3.10'
     
+    - name: Cache Buildozer
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.buildozer
+          .buildozer
+        key: buildozer-${{ runner.os }}-${{ hashFiles('buildozer.spec') }}
+    
     - name: Install dependencies
       run: |
         sudo apt update
@@ -24,6 +32,7 @@ jobs:
     
     - name: Build APK
       run: buildozer -v android debug
+      timeout-minutes: 60
     
     - name: Upload APK
       uses: actions/upload-artifact@v4
