@@ -18,4 +18,4 @@ android.permissions = INTERNET,WRITE_EXTERNAL_STORAGE,READ_EXTERNAL_STORAGE,POST
 android.api = 34
 android.minapi = 21
 android.ndk_version = 25b
-android.ndk_api = 21
+android.ndk_api = 34
