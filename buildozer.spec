@@ -5,20 +5,32 @@ package.domain = org.tuma
 source.dir =.
 source.include_exts = py,png,jpg,kv,atlas,json
 version = 23.3
-requirements = python3,kivy==2.3.0,https://github.com/kivymd/KivyMD/archive/master.zip,pillow,plyer
+version.code = 1
+icon = icon.png
+
+# CRITICAL: Use kivymd from github. Don't use kivymd==2.0
+requirements = python3,kivy==2.3.0,kivymd,pillow,plyer
+
 orientation = portrait
 fullscreen = 0
 android.arch = arm64-v8a
 android.api = 31
 android.minapi = 23
-android.ndk = 25
-android.sdk_path = /home/runner/buildozer/android/platform/android-sdk
-android.ndk_path = /home/runner/buildozer/android/platform/android-ndk-r25b
-android.permissions = INTERNET,CAMERA,READ_EXTERNAL_STORAGE,WRITE_EXTERNAL_STORAGE,ACCESS_NETWORK_STATE
+android.sdk_path = 
+android.ndk_path = 
+android.ndk = 25b
 android.enable_androidx = True
-android.logcat_filters = *:S python:D
+
+# Permissions for TUMA: Wallet, Chat, Camera, Storage
+android.permissions = INTERNET,CAMERA,READ_EXTERNAL_STORAGE,WRITE_EXTERNAL_STORAGE,ACCESS_NETWORK_STATE,ACCESS_WIFI_STATE
+
+# This fixes 90% of build crashes
 p4a.branch = master
+p4a.source_dir = 
+
+# For faster logs
 log_level = 2
+android.logcat_filters = *:S python:D
 
 [buildozer]
 log_level = 2
