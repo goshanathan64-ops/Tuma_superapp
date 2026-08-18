@@ -1,170 +1,139 @@
-import sqlite3
-from kivy.app import App
-from kivy.uix.screenmanager import ScreenManager, Screen
-from kivy.lang import Builder
-from kivy.core.window import Window
-from kivymd.app import MDApp
-from kivymd.uix.button import MDRaisedButton
-from kivymd.uix.label import MDLabel
-from kivymd.uix.card import MDCard
-from kivymd.uix.toolbar import MDTopAppBar
-from kivymd.uix.navigationdrawer import MDNavigationDrawer
-from kivy.utils import get_color_from_hex
-import datetime
 
-Window.clearcolor = get_color_from_hex("#0A0A0A")
+from kivy.lang import Builder
+from kivymd.app import MDApp
+from kivymd.uix.screen import MDScreen
+from kivymd.uix.snackbar import Snackbar
 
 KV = '''
-ScreenManager:
-    HomeScreen:
-    WalletScreen:
-    ChatScreen:
-    ReelsScreen:
-    DatingScreen:
-    AIAgentScreen:
-    AdminScreen:
-
-<HomeScreen>:
-    name: "home"
-    BoxLayout:
+MDScreen:
+    MDBoxLayout:
         orientation: "vertical"
+
         MDTopAppBar:
             title: "TUMA Super App V23.3"
-            md_bg_color: 0.05, 0.05, 0.05, 1
-        ScrollView:
-            MDList:
-                MDCard:
-                    size_hint:.9, None
-                    height: "120dp"
-                    pos_hint: {"center_x":.5}
-                    md_bg_color: 0.1, 0.6, 0.3, 1
-                    MDLabel:
-                        text: "Balance: US$ 0.00 | ZIG 0.00"
-                        halign: "center"
-                        theme_text_color: "Custom"
-                        text_color: 1,1,1,1
-                        font_size: "20sp"
-                MDRaisedButton:
-                    text: "Send $5"
-                    pos_hint: {"center_x":.5}
-                    on_release: app.root.current = "wallet"
-                MDRaisedButton:
-                    text: "Chat"
-                    pos_hint: {"center_x":.5}
-                    on_release: app.root.current = "chat"
-                MDRaisedButton:
-                    text: "Reels"
-                    pos_hint: {"center_x":.5}
-                    on_release: app.root.current = "reels"
-                MDRaisedButton:
-                    text: "Dating"
-                    pos_hint: {"center_x":.5}
-                    on_release: app.root.current = "dating"
-                MDRaisedButton:
-                    text: "AI Agent"
-                    pos_hint: {"center_x":.5}
-                    on_release: app.root.current = "aiagent"
-                MDRaisedButton:
-                    text: "Admin Panel"
-                    pos_hint: {"center_x":.5}
-                    on_release: app.root.current = "admin"
+            elevation: 4
+            md_bg_color: 0, 0.3, 0.7, 1
+            right_action_items: [["qr-code-scanner", lambda x: app.show_snack("QR Scanner")]]
 
-<WalletScreen>:
-    name: "wallet"
-    BoxLayout:
-        orientation: "vertical"
-        MDTopAppBar:
-            title: "Wallet"
-            left_action_items: [["arrow-left", lambda x: app.go_home()]]
-        MDLabel:
-            text: "Save Money & Send Tips"
-            halign: "center"
-        MDRaisedButton:
-            text: "Tip Creator US$1"
-            pos_hint: {"center_x":.5}
-        MDRaisedButton:
-            text: "Save to Jar"
-            pos_hint: {"center_x":.5}
+        MDBottomNavigation:
+            id: bottom_nav
+            panel_color: 0.05, 0.05, 0.05, 1
+            text_color_active: 0, 0.5, 1, 1
 
-<ChatScreen>:
-    name: "chat"
-    BoxLayout:
-        orientation: "vertical"
-        MDTopAppBar:
-            title: "Chat"
-            left_action_items: [["arrow-left", lambda x: app.go_home()]]
-        MDLabel:
-            text: "TUMA Chat Coming Soon"
-            halign: "center"
+            MDBottomNavigationItem:
+                name: "home"
+                text: "Home"
+                icon: "home"
+                MDScrollView:
+                    MDBoxLayout:
+                        orientation: "vertical"
+                        padding: 12
+                        spacing: 12
+                        adaptive_height: True
+                        MDCard:
+                            orientation: "vertical"
+                            padding: 12
+                            spacing: 8
+                            size_hint_y: None
+                            height: 120
+                            md_bg_color: 0.1, 0.1, 0.2, 1
+                            radius: [16]
+                            MDLabel:
+                                text: "Welcome back, CEO"
+                                font_style: "H6"
+                            MDLabel:
+                                text: "Level 12 | 2,450 TUMA Points"
+                                theme_text_color: "Secondary"
+                            MDLabel:
+                                text: "Balance: $125.50 USD | 3,200 ZWL | 540 T-Coin"
+                                theme_text_color: "Primary"
+                        MDLabel:
+                            text: "Quick Actions"
+                            font_style: "Subtitle1"
+                        MDGridLayout:
+                            cols: 3
+                            spacing: 10
+                            size_hint_y: None
+                            height: 100
+                            MDRaisedButton:
+                                text: "Send Money"
+                                on_release: app.show_snack("Send Money")
+                            MDRaisedButton:
+                                text: "Buy Airtime"
+                                on_release: app.show_snack("Buy Airtime")
+                            MDRaisedButton:
+                                text: "Scan QR"
+                                on_release: app.show_snack("QR Scanner")
 
-<ReelsScreen>:
-    name: "reels"
-    BoxLayout:
-        orientation: "vertical"
-        MDTopAppBar:
-            title: "Reels"
-            left_action_items: [["arrow-left", lambda x: app.go_home()]]
-        MDLabel:
-            text: "Short Videos"
-            halign: "center"
+            MDBottomNavigationItem:
+                name: "wallet"
+                text: "Wallet"
+                icon: "wallet"
+                MDList:
+                    TwoLineListItem:
+                        text: "TUMA Balance"
+                        secondary_text: "$125.50 USD | 3,200 ZWL"
+                    TwoLineListItem:
+                        text: "Send / Receive"
+                        secondary_text: "Phone number or QR"
+                    TwoLineListItem:
+                        text: "Buy Airtime & Data"
+                        secondary_text: "Econet, NetOne, Telecel"
 
-<DatingScreen>:
-    name: "dating"
-    BoxLayout:
-        orientation: "vertical"
-        MDTopAppBar:
-            title: "TUMA Dating"
-            left_action_items: [["arrow-left", lambda x: app.go_home()]]
-        MDLabel:
-            text: "Find Matches"
-            halign: "center"
+            MDBottomNavigationItem:
+                name: "chat"
+                text: "Chat"
+                icon: "chat"
+                MDLabel:
+                    text: "TUMA Chat - E2E Encrypted"
+                    halign: "center"
 
-<AIAgentScreen>:
-    name: "aiagent"
-    BoxLayout:
-        orientation: "vertical"
-        MDTopAppBar:
-            title: "TUMA AI Agent"
-            left_action_items: [["arrow-left", lambda x: app.go_home()]]
-        MDLabel:
-            text: "Ask me anything..."
-            halign: "center"
+            MDBottomNavigationItem:
+                name: "reels"
+                text: "Reels"
+                icon: "video"
+                MDLabel:
+                    text: "TUMA Reels - Creator Fund"
+                    halign: "center"
 
-<AdminScreen>:
-    name: "admin"
-    BoxLayout:
-        orientation: "vertical"
-        MDTopAppBar:
-            title: "Admin Panel"
-            left_action_items: [["arrow-left", lambda x: app.go_home()]]
-        MDLabel:
-            text: "Users | Transactions | Reports"
-            halign: "center"
+            MDBottomNavigationItem:
+                name: "dating"
+                text: "Dating"
+                icon: "heart"
+                MDLabel:
+                    text: "TUMA Dating - Verified + Safe"
+                    halign: "center"
+
+            MDBottomNavigationItem:
+                name: "ai"
+                text: "AI"
+                icon: "robot"
+                MDLabel:
+                    text: "TUMA AI Agent"
+                    halign: "center"
+
+            MDBottomNavigationItem:
+                name: "admin"
+                text: "Admin"
+                icon: "shield-account"
+                MDList:
+                    TwoLineListItem:
+                        text: "Analytics"
+                        secondary_text: "Views, Wallet, Followers"
+                    TwoLineListItem:
+                        text: "Withdraw"
+                        secondary_text: "Cash out to Bank/EcoCash"
 '''
-
-class HomeScreen(Screen): pass
-class WalletScreen(Screen): pass
-class ChatScreen(Screen): pass
-class ReelsScreen(Screen): pass
-class DatingScreen(Screen): pass
-class AIAgentScreen(Screen): pass
-class AdminScreen(Screen): pass
 
 class TumaApp(MDApp):
     def build(self):
         self.theme_cls.theme_style = "Dark"
-        self.theme_cls.primary_palette = "Green"
-        self.init_db()
+        self.theme_cls.primary_palette = "Blue"
+        self.title = "TUMA V23.3"
         return Builder.load_string(KV)
 
-    def go_home(self):
-        self.root.current = "home"
+    def show_snack(self, message):
+        Snackbar(text=message, duration=1.5).open()
 
-    def init_db(self):
-        conn = sqlite3.connect('tuma.db')
-        c = conn.cursor()
-        c.execute('''CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, balance_usd REAL, balance_zig REAL)''')
-        conn.commit()
-        conn.close()
-
-TumaApp().run()
+if __name__ == "__main__":
+    TumaApp().run()
