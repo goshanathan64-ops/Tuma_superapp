@@ -8,7 +8,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-22.04
-    timeout-minutes: 45
+    timeout-minutes: 60
     steps:
     - uses: actions/checkout@v4
     
@@ -22,17 +22,23 @@ jobs:
       uses: actions/setup-python@v5
       with:
         python-version: '3.10'
+        cache: 'pip'
         
     - name: Install Android Build Tools
       run: |
         yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --licenses
-        $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0" "build-tools;37.0.0"
+        $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0" "ndk;25.2.9519653"
         
     - name: Install dependencies
-      run: pip install buildozer cython==0.29.36
+      run: |
+        pip install --upgrade pip
+        pip install buildozer cython==0.29.36
       
     - name: Build APK
       run: buildozer -v android debug
+      env:
+        PIP_DEFAULT_TIMEOUT: 1000
+        PIP_RETRIES: 5
       
     - name: Upload APK
       uses: actions/upload-artifact@v4
