@@ -11,7 +11,7 @@ fullscreen = 1
 
 p4a.python_version = 3.10
 p4a.bootstrap = sdl2
-p4a.arch = arm64-v8a # ONLY 64-bit now
+p4a.arch = arm64-v8a
 
 icon.filename = %(source.dir)s/icon.png
 presplash.filename = %(source.dir)s/presplash.png
@@ -19,8 +19,7 @@ presplash.filename = %(source.dir)s/presplash.png
 android.permissions = INTERNET,WRITE_EXTERNAL_STORAGE,READ_EXTERNAL_STORAGE,POST_NOTIFICATIONS
 android.api = 34
 android.minapi = 21
-android.ndk = 25b # FORCE this NDK version
-android.api = 34
+android.ndk = 25b
 android.ndk_api = 34
 android.logcat_filters = *:S python:D
 android.allow_backup = True
