@@ -1,29 +1,23 @@
 [app]
 title = TUMA Super App
 package.name = tuma
-package.domain = com.tuma
+package.domain = org.tuma
 source.dir =.
-source.include_exts = py,png,jpg,kv,atlas,ttf,db,json
+source.include_exts = py,png,jpg,kv,atlas,json
 version = 23.3
-requirements = python3,kivy==2.3.0,kivymd==2.0.1.dev0,requests,pillow,cython==0.29.36
-android.arch = arm64-v8a
+requirements = python3,kivy==2.3.0,https://github.com/kivymd/KivyMD/archive/master.zip,pillow,plyer
 orientation = portrait
-fullscreen = 1
-
-p4a.python_version = 3.10
-p4a.bootstrap = sdl2
-
-icon.filename = %(source.dir)s/icon.png
-presplash.filename = %(source.dir)s/presplash.png
-
-android.permissions = INTERNET,WRITE_EXTERNAL_STORAGE,READ_EXTERNAL_STORAGE,POST_NOTIFICATIONS
+fullscreen = 0
+android.arch = arm64-v8a
 android.api = 34
-android.minapi = 21
-android.ndk = 25b
-android.ndk_api = 34
+android.minapi = 23
+android.sdk_path = /home/runner/buildozer/android/platform/android-sdk
+android.ndk_path = /home/runner/buildozer/android/platform/android-ndk-r25b
+android.permissions = INTERNET,CAMERA,READ_EXTERNAL_STORAGE,WRITE_EXTERNAL_STORAGE,ACCESS_NETWORK_STATE
+android.enable_androidx = True
 android.logcat_filters = *:S python:D
-android.allow_backup = True
-android.accept_sdk_license = True
+p4a.branch = master
+log_level = 2
 
 [buildozer]
 log_level = 2
