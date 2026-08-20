@@ -9,12 +9,18 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
+    - name: Cache Buildozer
+      uses: actions/cache@v4
+      with:
+        path: .buildozer
+        key: buildozer-${{ runner.os }}-${{ hashFiles('buildozer.spec') }}
+    
     - name: Build with Buildozer
       uses: ArtemSBulgakov/buildozer-action@v1
       with:
         buildozer_version: stable
         command: buildozer -v android debug
-        workdir:.
+        workdir: .
         
     - name: Upload APK
       uses: actions/upload-artifact@v4
