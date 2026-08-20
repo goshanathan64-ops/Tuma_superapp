@@ -22,14 +22,8 @@ jobs:
       - name: Install Buildozer
         run: pip3 install --upgrade buildozer cython==0.29.33 virtualenv
 
-      - name: Build APK with Buildozer
-        run: |
-          mkdir -p ~/.android
-          touch ~/.android/repositories.cfg
-          yes | buildozer android debug
-        env:
-          ANDROIDSDK: /home/runner/.buildozer/android/platform/android-sdk
-          ANDROIDNDK: /home/runner/.buildozer/android/platform/android-ndk-r27c
+      - name: Build APK
+        run: buildozer -v android debug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
