@@ -1,29 +1,10 @@
-name: Build TUMA APK
-on: 
-  workflow_dispatch:
-
+name: Build TUMA
+on: workflow_dispatch
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      
-      - name: Set up Java
-        uses: actions/setup-java@v4
+      - uses: actions/checkout@v4
+      - uses: ArtemSBulgakov/buildozer-action@v1
         with:
-          distribution: 'temurin'
-          java-version: '17'
-          
-      - name: Build APK with Buildozer
-        uses: ArtemSBulgakov/buildozer-action@v1
-        with:
-          buildozer_version: master
           command: buildozer android debug
-          workdir: .
-          
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: TUMA-V23.3-debug
-          path: bin/*.apk
