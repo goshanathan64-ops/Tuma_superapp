@@ -16,7 +16,7 @@ MDScreen:
             MDLabel:
                 text: 'TUMA Super App V23.3'
                 halign: 'center'
-                font_style: 'H4'
+                font_style: 'H3'  # CHANGED FROM H4
 '''
 
 class TumaApp(MDApp):
