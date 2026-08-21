@@ -1,15 +1,26 @@
 [app]
+
 title = TUMA
 package.name = tuma
 package.domain = org.tuma
-source.dir =.
-version = 23.3
-requirements = python3,kivy==2.3.0,kivymd==1.2.0
+
+source.dir = .
+source.include_exts = py,png,jpg,jpeg,kv,atlas,json
+
+requirements = python3,kivy
+
 orientation = portrait
 
+fullscreen = 0
+
+[buildozer]
+
+log_level = 2
+
+warn_on_root = 1
+
 [app:android]
-android.api = 34
+
+android.api = 35
 android.minapi = 21
-android.ndk = 25b
-android.arch = arm64-v8a
-android.permissions = INTERNET
+android.ndk = 27c
