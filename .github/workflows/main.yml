@@ -1,32 +1,14 @@
 name: Build TUMA APK
-
-on:
-  workflow_dispatch:
-
+on: workflow_dispatch:
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
-
-      - name: Install system dependencies
-        run: |
-          sudo apt update
-          sudo apt install -y git zip unzip openjdk-17-jdk python3-pip
-
-      - name: Install Buildozer
-        run: pip3 install buildozer==1.5.0 cython==0.29.33 virtualenv
-
-      - name: Build APK
-        run: buildozer -v android debug
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: TUMA-V23.3-debug-apk
-          path: bin/*.apk
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.10'}
+      - run: sudo apt update && sudo apt install -y git zip unzip openjdk-17-jdk python3-pip
+      - run: pip3 install buildozer==1.5.0 cython==0.29.33 virtualenv
+      - run: buildozer android debug
+      - uses: actions/upload-artifact@v4
+        with: {name: TUMA-V23.3, path: bin/*.apk}
