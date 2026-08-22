@@ -4,11 +4,6 @@ from kivymd.uix.label import MDLabel
 
 class TumaApp(MDApp):
     def build(self):
-        self.title = "TUMA V23.3"
-        self.theme_cls.primary_palette = "Blue"
-        screen = MDScreen()
-        screen.add_widget(MDLabel(text="TUMA Super App V23.3", halign="center", font_style="H3"))
-        return screen
+        return MDScreen(md_bg_color="#FFFFFF", children=[MDLabel(text="TUMA V23.4", halign="center")])
 
-if __name__ == '__main__':
-    TumaApp().run()
+TumaApp().run()
