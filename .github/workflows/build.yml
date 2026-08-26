@@ -1,100 +1,37 @@
+
 name: Build TUMA APK
 on:
   workflow_dispatch:
-    inputs:
-      variant:
-        description: 'Build variant (debug or release)'
-        required: true
-        default: debug
-        type: choice
-        options:
-          - debug
-          - release
-      sdk_platform:
-        description: 'Android platform to install (e.g. android-34)'
-        required: true
-        default: 'android-34'
-      build_tools:
-        description: 'Android build tools version (e.g. 34.0.0)'
-        required: true
-        default: '34.0.0'
-      ndk_version:
-        description: 'NDK version (e.g. 25.2.9519653)'
-        required: true
-        default: '25.2.9519653'
-      artifact_name:
-        description: 'Base artifact name (will include variant)'
-        required: true
-        default: 'TUMA-V23.7'
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/buildozer/buildozer:latest
-      env:
-        ANDROID_HOME: /opt/android-sdk
-        ANDROID_SDK_ROOT: /opt/android-sdk
-
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Accept licenses and install SDK/NDK
-        run: |
-          yes | sdkmanager --licenses
-          sdkmanager "platforms;${{ inputs.sdk_platform }}" "build-tools;${{ inputs.build_tools }}" "ndk;${{ inputs.ndk_version }}"
-
-      - name: If release -> restore keystore from secret and update buildozer.spec
-        if: ${{ inputs.variant == 'release' }}
-        env:
-          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-          KEY_ALIAS_PASSWORD: ${{ secrets.KEY_ALIAS_PASSWORD }}
-        run: |
-          if [ -z "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" ]; then
-            echo "ANDROID_KEYSTORE_BASE64 secret is not set"
-            exit 1
-          fi
-          echo "Restoring keystore to /tmp/release.keystore"
-          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > /tmp/release.keystore
-          # Update buildozer.spec signing settings (ensure these keys exist or adjust as needed)
-          if grep -q "^android.release_keystore" buildozer.spec; then
-            sed -i "s|^android.release_keystore *=.*|android.release_keystore = /tmp/release.keystore|" buildozer.spec || true
-          else
-            echo "\n# Signing settings added by workflow" >> buildozer.spec
-            echo "android.release_keystore = /tmp/release.keystore" >> buildozer.spec
-          fi
-          if [ -n "${KEYSTORE_PASSWORD}" ]; then
-            if grep -q "^android.release_keystore_pass" buildozer.spec; then
-              sed -i "s|^android.release_keystore_pass *=.*|android.release_keystore_pass = ${KEYSTORE_PASSWORD}|" buildozer.spec || true
-            else
-              echo "android.release_keystore_pass = ${KEYSTORE_PASSWORD}" >> buildozer.spec
-            fi
-          fi
-          if [ -n "${KEY_ALIAS}" ]; then
-            if grep -q "^android.release_keyalias" buildozer.spec; then
-              sed -i "s|^android.release_keyalias *=.*|android.release_keyalias = ${KEY_ALIAS}|" buildozer.spec || true
-            else
-              echo "android.release_keyalias = ${KEY_ALIAS}" >> buildozer.spec
-            fi
-          fi
-          if [ -n "${KEY_ALIAS_PASSWORD}" ]; then
-            if grep -q "^android.release_keyalias_pass" buildozer.spec; then
-              sed -i "s|^android.release_keyalias_pass *=.*|android.release_keyalias_pass = ${KEY_ALIAS_PASSWORD}|" buildozer.spec || true
-            else
-              echo "android.release_keyalias_pass = ${KEY_ALIAS_PASSWORD}" >> buildozer.spec
-            fi
-          fi
-
-      - name: Build APK
-        run: |
-          if [ "${{ inputs.variant }}" = "release" ]; then
-            buildozer android release
-          else
-            buildozer android debug
-          fi
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: "${{ inputs.artifact_name }}-${{ inputs.variant }}"
-          path: bin/*.apk
+    - uses: actions/checkout@v4
+    
+    - uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+    
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+    
+    - name: Install dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y git zip unzip python3-pip autoconf libtool pkg-config zlib1g-dev libncurses1
+    
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v3
+      with:
+        api-level: 34
+        build-tools: 34.0.0
+        ndk-version: 25.2.9519653
+    
+    - name: Accept licenses
+      run: yes | sdkmanager --licenses
+    
+    - name: Install Buildozer
+      run: pip install buildozer==1.5.0 cython==0.
