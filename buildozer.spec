@@ -3,7 +3,7 @@ title = TUMA
 package.name = tuma
 package.domain = org.tuma
 source.dir =.
-version = 23.7
+version = 23.8
 requirements = python3,kivy==2.3.0,kivymd==1.2.0
 orientation = portrait
 
@@ -12,3 +12,4 @@ android.api = 34
 android.minapi = 21
 android.ndk = 25b
 android.build_tools_version = 34.0.0
+android.accept_sdk_license = True
