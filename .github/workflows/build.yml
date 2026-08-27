@@ -9,55 +9,82 @@ jobs:
 
     steps:
 
-      # ----------------------------------------
+      # -----------------------------
       # Checkout
-      # ----------------------------------------
+      # -----------------------------
       - name: Checkout
         uses: actions/checkout@v4
 
 
-      # ----------------------------------------
-      # Python
-      # ----------------------------------------
+      # -----------------------------
+      # Python 3.10
+      # -----------------------------
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.10"
 
 
-      # ----------------------------------------
-      # Java + dependencies
-      # ----------------------------------------
+      # -----------------------------
+      # Java 17
+      # -----------------------------
+      - name: Set up Java 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+
+      # -----------------------------
+      # System dependencies
+      # -----------------------------
       - name: Install dependencies
         run: |
           sudo apt-get update
 
           sudo apt-get install -y \
-            openjdk-17-jdk \
             git \
             zip \
             unzip \
             wget \
-            python3-pip \
             autoconf \
             libtool \
             pkg-config
 
 
-      # ----------------------------------------
-      # Java 17
-      # ----------------------------------------
-      - name: Configure Java 17
+      # -----------------------------
+      # Android SDK
+      # -----------------------------
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          cmdline-tools-version: 12266719
+          accept-android-sdk-licenses: true
+          log-accepted-android-sdk-licenses: true
+          packages: |
+            platform-tools
+            platforms;android-34
+            build-tools;37.0.0
+
+
+      # -----------------------------
+      # Show Android SDK
+      # -----------------------------
+      - name: Verify Android SDK
         run: |
-          echo "JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64" >> "$GITHUB_ENV"
-          echo "/usr/lib/jvm/java-17-openjdk-amd64/bin" >> "$GITHUB_PATH"
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
 
-          java -version
+          sdkmanager --list_installed
+
+          echo "Checking AIDL..."
+
+          find "$ANDROID_HOME/build-tools" -name aidl -type f -print
 
 
-      # ----------------------------------------
+      # -----------------------------
       # Install Buildozer
-      # ----------------------------------------
+      # -----------------------------
       - name: Install Buildozer
         run: |
           python -m pip install --upgrade pip
@@ -67,100 +94,19 @@ jobs:
           pip install virtualenv
 
 
-      # ----------------------------------------
-      # Android SDK
-      # ----------------------------------------
-      - name: Install Android SDK
-        run: |
-
-          SDK="$HOME/.buildozer/android/platform/android-sdk"
-
-          mkdir -p "$SDK/cmdline-tools"
-
-          cd /tmp
-
-          wget -q \
-            https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip \
-            -O commandlinetools.zip
-
-          unzip -q commandlinetools.zip
-
-          mkdir -p "$SDK/cmdline-tools/latest"
-
-          mv cmdline-tools/* "$SDK/cmdline-tools/latest/"
-
-
-      # ----------------------------------------
-      # Android environment
-      # ----------------------------------------
-      - name: Configure Android environment
-        run: |
-
-          SDK="$HOME/.buildozer/android/platform/android-sdk"
-
-          echo "ANDROIDSDK=$SDK" >> "$GITHUB_ENV"
-          echo "ANDROID_HOME=$SDK" >> "$GITHUB_ENV"
-
-          echo "$SDK/cmdline-tools/latest/bin" >> "$GITHUB_PATH"
-          echo "$SDK/platform-tools" >> "$GITHUB_PATH"
-
-
-      # ----------------------------------------
-      # Accept ALL Android licenses
-      # ----------------------------------------
-      - name: Accept Android licenses
-        run: |
-
-          SDK="$HOME/.buildozer/android/platform/android-sdk"
-
-          yes | "$SDK/cmdline-tools/latest/bin/sdkmanager" --licenses || true
-
-
-      # ----------------------------------------
-      # Install Android packages
-      # ----------------------------------------
-      - name: Install Android Build Tools 37
-        run: |
-
-          SDK="$HOME/.buildozer/android/platform/android-sdk"
-
-          "$SDK/cmdline-tools/latest/bin/sdkmanager" \
-            "platform-tools" \
-            "platforms;android-34" \
-            "build-tools;37.0.0"
-
-
-      # ----------------------------------------
-      # Verify Build Tools
-      # ----------------------------------------
-      - name: Verify AIDL
-        run: |
-
-          SDK="$HOME/.buildozer/android/platform/android-sdk"
-
-          echo "Build Tools:"
-          ls -la "$SDK/build-tools/37.0.0"
-
-          echo ""
-          echo "AIDL:"
-          "$SDK/build-tools/37.0.0/aidl" --version
-
-
-      # ----------------------------------------
+      # -----------------------------
       # Build TUMA
-      # ----------------------------------------
+      # -----------------------------
       - name: Build TUMA APK
         run: |
-
           buildozer android debug
 
 
-      # ----------------------------------------
+      # -----------------------------
       # Upload APK
-      # ----------------------------------------
+      # -----------------------------
       - name: Upload APK
         uses: actions/upload-artifact@v4
-
         with:
           name: TUMA-V23.13-APK
           path: bin/*.apk
