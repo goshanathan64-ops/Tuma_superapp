@@ -7,20 +7,39 @@ jobs:
   build:
     name: Build (Python / KivyMD / Buildozer)
     runs-on: ubuntu-latest
+    timeout-minutes: 240
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
-      - name: Install system packages
+      - name: Print environment info
         run: |
-          sudo apt update
-          sudo apt install -y git zip unzip openjdk-17-jdk python3-pip build-essential libssl-dev libffi-dev zlib1g-dev libncurses5-dev libgdbm-dev libsqlite3-dev
+          java -version || true
+          python -V || true
+          pip -V || true
+          uname -a
+
+      - name: Install system packages (needed for Buildozer/Kivy build)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            git zip unzip curl build-essential python3-dev python3-venv python-is-python3 \
+            libssl-dev libffi-dev zlib1g-dev libncurses5-dev libgdbm-dev libsqlite3-dev \
+            libbz2-dev liblzma-dev libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev \
+            libportmidi-dev libfreetype6-dev libjpeg-dev libpng-dev libxml2-dev libxslt1-dev \
+            libgl1-mesa-dev libglu1-mesa-dev ffmpeg pkg-config
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
@@ -29,37 +48,71 @@ jobs:
           build-tools: 34.0.0
           ndk-version: 25.2.9519653
 
+      - name: Ensure Android SDK tools on PATH
+        run: |
+          echo "ANDROID_SDK_ROOT=${ANDROID_SDK_ROOT:-$HOME/Android/Sdk}"
+          echo "ANDROID_HOME=${ANDROID_HOME:-$HOME/Android/Sdk}"
+          export ANDROID_SDK_ROOT=${ANDROID_SDK_ROOT:-$HOME/Android/Sdk}
+          export ANDROID_HOME=${ANDROID_HOME:-$HOME/Android/Sdk}
+          sdkmanager --version || true
+
       - name: Accept Android SDK licenses
         run: yes | sdkmanager --licenses || true
 
-      - name: Upgrade pip and install Python deps
+      - name: Upgrade pip & install buildozer deps (no kivy/kivymd on host)
         run: |
-          python -m pip install --upgrade pip
-          # Install Buildozer, Cython and helper packages. Kivy/KivyMD installed for local deps checks; final packaging is driven by buildozer.spec requirements.
-          python -m pip install --upgrade setuptools wheel
-          python -m pip install buildozer==1.5.0 cython==0.29.33 virtualenv kivy kivymd
+          python -m pip install --upgrade pip setuptools wheel
+          # Install Cython early so native wheels can be built
+          python -m pip install --upgrade cython==0.29.33
+          # Install Buildozer/virtualenv; allow python-for-android (p4a) to fetch and build Kivy
+          python -m pip install --upgrade buildozer==1.5.0 virtualenv
 
-      - name: Ensure ANDROID env vars
+      - name: Show buildozer & python info
         run: |
-          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
-          echo "ANDROID_HOME=$ANDROID_HOME"
-          echo "JAVA_HOME=$JAVA_HOME"
-        env:
-          ANDROID_SDK_ROOT: ${{ env.ANDROID_SDK_ROOT }}
-          ANDROID_HOME: ${{ env.ANDROID_HOME }}
-          JAVA_HOME: ${{ env.JAVA_HOME }}
+          buildozer --version || true
+          python -c "import cython; print('cython', cython.__version__)" || true
+
+      - name: Cache pip packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+
+      - name: Clean previous builds (if any)
+        run: |
+          if [ -d ./.buildozer ]; then
+            buildozer android clean || true
+          fi
+
+      - name: Ensure buildozer.spec exists
+        run: |
+          ls -la
+          if [ ! -f buildozer.spec ]; then
+            echo 'ERROR: buildozer.spec not found in repo root' && exit 1
+          fi
+          echo 'buildozer.spec found; showing first 200 lines:'
+          sed -n '1,200p' buildozer.spec || true
 
       - name: Build TUMA Debug APK
-        run: |
-          # Run buildozer (verbose). buildozer will use buildozer.spec in the repo—ensure requirements include kivy and kivymd there.
-          buildozer -v android debug
         env:
-          ANDROID_HOME: ${{ env.ANDROID_HOME }}
           ANDROID_SDK_ROOT: ${{ env.ANDROID_SDK_ROOT }}
+          ANDROID_HOME: ${{ env.ANDROID_HOME }}
           JAVA_HOME: ${{ env.JAVA_HOME }}
+        run: |
+          # Run buildozer in verbose mode to make logs easier to read when diagnosing failures
+          buildozer -v android debug
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: TUMA-APK
           path: bin/*.apk
+
+      - name: Upload build logs for debugging
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: buildozer-logs
+          path: |
+            ./.buildozer/**
+            buildozer.spec
