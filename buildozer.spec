@@ -19,11 +19,11 @@ fullscreen = 0
 android.api = 34
 android.minapi = 21
 android.ndk = 25b
-android.build_tools_version = 34.0.0
+android.build_tools_version = 37.0.0
 
 android.accept_sdk_license = True
 
-# APK architecture
+# Architecture
 android.arch = arm64-v8a
 
 # Python-for-Android
