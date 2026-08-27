@@ -31,22 +31,25 @@ jobs:
           build-tools: 34.0.0
           ndk-version: 25.2.9519653
       
-      - name: Force Install Build-Tools 34 + Accept ALL Licenses
+      - name: Accept ALL Licenses Manually
         run: |
-          sdkmanager "platforms;android-34" "build-tools;34.0.0" "platform-tools"
-          yes | sdkmanager --licenses
-          sdkmanager --list_installed
+          yes | ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --licenses
+          ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --install "build-tools;34.0.0" "platforms;android-34"
       
       - name: Install Buildozer + Cython
         run: pip install buildozer==1.5.0 cython==0.29.33 virtualenv
       
-      - name: Build TUMA APK
+      - name: Delete Buildozer Cache to Force SDK 34
+        run: rm -rf ~/.buildozer
+      
+      - name: Build TUMA APK with Forced SDK
         run: buildozer android debug
         env:
-          ANDROID_SDK_ROOT: ${{ env.ANDROID_HOME }}
+          ANDROIDSDK: ${{ env.ANDROID_HOME }}
+          ANDROIDNDK: ${{ env.ANDROID_HOME }}/ndk/25.2.9519653
           ANDROID_HOME: ${{ env.ANDROID_HOME }}
       
       - uses: actions/upload-artifact@v4
         with:
-          name: TUMA-V23.15-APK
+          name: TUMA-V23.16-APK
           path: bin/*.apk
