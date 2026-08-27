@@ -1,48 +1,65 @@
-
 name: Build TUMA APK
+
 on:
   workflow_dispatch:
 
 jobs:
   build:
+    name: Build (Python / KivyMD / Buildozer)
     runs-on: ubuntu-latest
-    
+
     steps:
-    - uses: actions/checkout@v4
-    
-    - uses: actions/setup-java@v4
-      with:
-        java-version: '17'
-        distribution: 'temurin'
-    
-    - uses: actions/setup-python@v5
-      with:
-        python-version: '3.10'
-    
-    - name: Install system packages
-      run: |
-        sudo apt update
-        sudo apt install -y git zip unzip python3-pip
-    
-    - name: Setup Android SDK
-      uses: android-actions/setup-android@v3
-      with:
-        api-level: 34
-        build-tools: 34.0.0
-        ndk-version: 25.2.9519653
-    
-    - name: Accept Licenses
-      run: yes | sdkmanager --licenses
-    
-    - name: Install Buildozer
-      run: pip install buildozer==1.5.0 cython==0.29.33 virtualenv
-    
-    - name: Build TUMA Debug APK
-      run: buildozer android debug
-      env:
-        ANDROID_HOME: ${{ env.ANDROID_HOME }}
-    
-    - uses: actions/upload-artifact@v4
-      with:
-        name: TUMA-V23.9-APK
-        path: bin/*.apk
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install system packages
+        run: |
+          sudo apt update
+          sudo apt install -y git zip unzip openjdk-17-jdk python3-pip build-essential libssl-dev libffi-dev zlib1g-dev libncurses5-dev libgdbm-dev libsqlite3-dev
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          api-level: 34
+          build-tools: 34.0.0
+          ndk-version: 25.2.9519653
+
+      - name: Accept Android SDK licenses
+        run: yes | sdkmanager --licenses || true
+
+      - name: Upgrade pip and install Python deps
+        run: |
+          python -m pip install --upgrade pip
+          # Install Buildozer, Cython and helper packages. Kivy/KivyMD installed for local deps checks; final packaging is driven by buildozer.spec requirements.
+          python -m pip install --upgrade setuptools wheel
+          python -m pip install buildozer==1.5.0 cython==0.29.33 virtualenv kivy kivymd
+
+      - name: Ensure ANDROID env vars
+        run: |
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          echo "JAVA_HOME=$JAVA_HOME"
+        env:
+          ANDROID_SDK_ROOT: ${{ env.ANDROID_SDK_ROOT }}
+          ANDROID_HOME: ${{ env.ANDROID_HOME }}
+          JAVA_HOME: ${{ env.JAVA_HOME }}
+
+      - name: Build TUMA Debug APK
+        run: |
+          # Run buildozer (verbose). buildozer will use buildozer.spec in the repo—ensure requirements include kivy and kivymd there.
+          buildozer -v android debug
+        env:
+          ANDROID_HOME: ${{ env.ANDROID_HOME }}
+          ANDROID_SDK_ROOT: ${{ env.ANDROID_SDK_ROOT }}
+          JAVA_HOME: ${{ env.JAVA_HOME }}
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: TUMA-APK
+          path: bin/*.apk
