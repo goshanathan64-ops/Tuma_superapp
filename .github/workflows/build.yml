@@ -16,20 +16,20 @@ jobs:
         with:
           python-version: "3.10"
 
-      - name: Install system dependencies
+      - name: Install Java and dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y \
+            openjdk-17-jdk \
             git \
             zip \
             unzip \
-            openjdk-17-jdk \
             python3-pip \
             autoconf \
             libtool \
             pkg-config
 
-      - name: Configure Java 17
+      - name: Set Java 17
         run: |
           echo "JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64" >> "$GITHUB_ENV"
           echo "/usr/lib/jvm/java-17-openjdk-amd64/bin" >> "$GITHUB_PATH"
@@ -42,77 +42,29 @@ jobs:
           pip install cython==0.29.33
           pip install virtualenv
 
-      # IMPORTANT:
-      # Force Buildozer/p4a to use Build Tools 34.0.0
-      - name: Configure Buildozer
+      # ------------------------------------------------
+      # Buildozer SDK directory
+      # ------------------------------------------------
+      - name: Prepare Buildozer Android SDK
         run: |
-          mkdir -p ~/.buildozer
+          mkdir -p /home/runner/.buildozer/android/platform
 
-          cat > ~/.buildozer/config <<'EOF'
-          [buildozer]
-          log_level = 2
-          warn_on_root = 1
-          EOF
-
-      # Pre-create the Android SDK using Ubuntu's Android command line tools
-      - name: Install Android command line tools
-        run: |
-          SDK="$HOME/android-sdk"
-
-          mkdir -p "$SDK/cmdline-tools"
-
-          cd /tmp
-
-          wget -q \
-            https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip \
-            -O cmdline-tools.zip
-
-          unzip -q cmdline-tools.zip
-
-          mkdir -p "$SDK/cmdline-tools/latest"
-
-          mv cmdline-tools/* "$SDK/cmdline-tools/latest/"
-
-          echo "ANDROIDSDK=$SDK" >> "$GITHUB_ENV"
-          echo "ANDROID_HOME=$SDK" >> "$GITHUB_ENV"
-          echo "$SDK/cmdline-tools/latest/bin" >> "$GITHUB_PATH"
-
-      # Accept ALL Android licenses before installing anything
-      - name: Accept Android licenses
-        run: |
-          SDK="$HOME/android-sdk"
-
-          yes | "$SDK/cmdline-tools/latest/bin/sdkmanager" --licenses || true
-
-      # Install exactly the versions used by TUMA
-      - name: Install Android SDK packages
-        run: |
-          SDK="$HOME/android-sdk"
-
-          "$SDK/cmdline-tools/latest/bin/sdkmanager" \
-            "platform-tools" \
-            "platforms;android-34" \
-            "build-tools;34.0.0"
-
-      # Verify AIDL exists before Buildozer starts
-      - name: Verify Android Build Tools
-        run: |
-          SDK="$HOME/android-sdk"
-
-          echo "Checking Build Tools..."
-
-          ls -la "$SDK/build-tools/34.0.0"
-
-          echo "Checking AIDL..."
-
-          "$SDK/build-tools/34.0.0/aidl" --version
-
+      # ------------------------------------------------
       # Build
-      - name: Build TUMA APK
+      #
+      # Buildozer will download its Android SDK.
+      # --accept-sdk-license automatically accepts
+      # Android SDK licenses.
+      # ------------------------------------------------
+      - name: Build TUMA
+        env:
+          BUILDOZER_WARN_ON_ROOT: "1"
         run: |
-          buildozer android debug
+          yes | buildozer android debug
 
+      # ------------------------------------------------
       # Upload APK
+      # ------------------------------------------------
       - name: Upload TUMA APK
         uses: actions/upload-artifact@v4
         with:
