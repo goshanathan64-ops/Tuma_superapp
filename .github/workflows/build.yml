@@ -1,4 +1,3 @@
-
 name: Build TUMA APK
 on:
   workflow_dispatch:
@@ -32,16 +31,22 @@ jobs:
           build-tools: 34.0.0
           ndk-version: 25.2.9519653
       
-      - name: Accept Android Licenses
-        run: yes | sdkmanager --licenses
+      - name: Force Install Build-Tools 34 + Accept ALL Licenses
+        run: |
+          sdkmanager "platforms;android-34" "build-tools;34.0.0" "platform-tools"
+          yes | sdkmanager --licenses
+          sdkmanager --list_installed
       
       - name: Install Buildozer + Cython
         run: pip install buildozer==1.5.0 cython==0.29.33 virtualenv
       
       - name: Build TUMA APK
         run: buildozer android debug
+        env:
+          ANDROID_SDK_ROOT: ${{ env.ANDROID_HOME }}
+          ANDROID_HOME: ${{ env.ANDROID_HOME }}
       
       - uses: actions/upload-artifact@v4
         with:
-          name: TUMA-V23.14-APK
+          name: TUMA-V23.15-APK
           path: bin/*.apk
