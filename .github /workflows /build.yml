@@ -1,3 +1,4 @@
+
 name: Build TUMA APK
 on:
   workflow_dispatch:
@@ -18,14 +19,12 @@ jobs:
       with:
         python-version: '3.10'
     
-    - name: Install system dependencies for Kivy + pycairo
+    - name: Install system dependencies
       run: |
         sudo apt update
-        sudo apt install -y git zip unzip python3-pip
-        sudo apt install -y libcairo2-dev libgirepository1.0-dev libgl1-mesa-dev libgles2-mesa-dev libffi-dev libjpeg-dev zlib1g-dev pkg-config
-    
-    - name: Pre-install pycairo
-      run: pip install pycairo==1.26.0
+        sudo apt install -y git zip unzip python3-pip pkg-config
+        sudo apt install -y libcairo2 libcairo2-dev libgirepository1.0-dev libgl1-mesa-dev libgles2-mesa-dev libffi-dev libjpeg-dev zlib1g-dev
+        sudo apt install -y libmtdev-dev libsqlite3-dev libssl-dev libbz2-dev libreadline-dev libncurses5-dev libncursesw5-dev xz-utils tk-dev
     
     - name: Setup Android SDK 34
       uses: android-actions/setup-android@v3
@@ -45,5 +44,5 @@ jobs:
     
     - uses: actions/upload-artifact@v4
       with:
-        name: TUMA-V23.12-APK
+        name: TUMA-V23.13-APK
         path: bin/*.apk
